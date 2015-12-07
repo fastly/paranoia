@@ -1,4 +1,8 @@
-# Paranoia
+### fastly/paranoia
+
+This fork's goal is to be an up-to-date and working version of the `rails3` branch.
+
+#Paranoia
 
 Paranoia is a re-implementation of [acts\_as\_paranoid](http://github.com/technoweenie/acts_as_paranoid) for Rails 3, using much, much, much less code.
 
