@@ -1,4 +1,6 @@
 require 'bundler'
+require 'rubocop/rake_task'
+
 Bundler::GemHelper.install_tasks
 
 task :test do
@@ -7,4 +9,6 @@ task :test do
   end
 end
 
-task :default => :test
+RuboCop::RakeTask.new
+
+task default: %w( test rubocop )

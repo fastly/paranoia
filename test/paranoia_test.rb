@@ -7,7 +7,7 @@ DB_FILE = 'tmp/test_db'
 FileUtils.mkdir_p File.dirname(DB_FILE)
 FileUtils.rm_f DB_FILE
 
-ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database => DB_FILE
+ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: DB_FILE
 ActiveRecord::Base.connection.execute 'CREATE TABLE parent_models (id INTEGER NOT NULL PRIMARY KEY, deleted_at DATETIME)'
 ActiveRecord::Base.connection.execute 'CREATE TABLE paranoid_models (id INTEGER NOT NULL PRIMARY KEY, parent_model_id INTEGER, deleted_at DATETIME)'
 ActiveRecord::Base.connection.execute 'CREATE TABLE paranoid_model_with_belongs (id INTEGER NOT NULL PRIMARY KEY, parent_model_id INTEGER, deleted_at DATETIME, paranoid_model_with_has_one_id INTEGER)'
@@ -79,7 +79,6 @@ class ParanoiaTest < Test::Unit::TestCase
     assert model.instance_variable_get(:@after_commit_callback_called)
   end
 
-
   def test_delete_behavior_for_plain_models_callbacks
     model = CallbackModel.new
     model.save
@@ -112,14 +111,14 @@ class ParanoiaTest < Test::Unit::TestCase
     ParanoidModel.unscoped.delete_all
     parent1 = ParentModel.create
     parent2 = ParentModel.create
-    p1 = ParanoidModel.create(:parent_model => parent1)
-    p2 = ParanoidModel.create(:parent_model => parent2)
+    p1 = ParanoidModel.create(parent_model: parent1)
+    p2 = ParanoidModel.create(parent_model: parent2)
     p1.destroy
     p2.destroy
     assert_equal 0, parent1.paranoid_models.count
     assert_equal 1, parent1.paranoid_models.only_deleted.count
     assert_equal 1, parent1.paranoid_models.deleted.count
-    p3 = ParanoidModel.create(:parent_model => parent1)
+    p3 = ParanoidModel.create(parent_model: parent1)
     assert_equal 2, parent1.paranoid_models.with_deleted.count
     assert_equal [p1, p3], parent1.paranoid_models.with_deleted
   end
@@ -142,7 +141,7 @@ class ParanoiaTest < Test::Unit::TestCase
   end
 
   def test_destroy_behavior_for_featureful_paranoid_models
-    model = get_featureful_model
+    model = featureful_model
     assert_equal 0, model.class.count
     model.save!
     assert_equal 1, model.class.count
@@ -156,7 +155,7 @@ class ParanoiaTest < Test::Unit::TestCase
 
   # Regression test for #24
   def test_chaining_for_paranoid_models
-    scope = FeaturefulModel.where(:name => 'foo').only_deleted
+    scope = FeaturefulModel.where(name: 'foo').only_deleted
     assert_equal 'foo', scope.where_values_hash['name']
     assert_equal 2, scope.where_values.count
   end
@@ -195,14 +194,14 @@ class ParanoiaTest < Test::Unit::TestCase
     assert_equal 0, employee.jobs.count
     assert_equal 0, employee.employers.count
 
-    job = Job.create :employer => employer, :employee => employee
+    job = Job.create employer: employer, employee: employee
     assert_equal 1, employer.jobs.count
     assert_equal 1, employer.employees.count
     assert_equal 1, employee.jobs.count
     assert_equal 1, employee.employers.count
 
     employee2 = Employee.create
-    job2 = Job.create :employer => employer, :employee => employee2
+    Job.create employer: employer, employee: employee2
     employee2.destroy
     assert_equal 2, employer.jobs.count
     assert_equal 1, employer.employees.count
@@ -315,7 +314,7 @@ class ParanoiaTest < Test::Unit::TestCase
 
   def test_real_destroy_dependent_destroy_after_normal_destroy_does_not_delete_other_children
     parent_1 = ParentModel.create
-    child_1 = parent_1.very_related_models.create
+    parent_1.very_related_models.create
 
     parent_2 = ParentModel.create
     child_2 = parent_2.very_related_models.create
@@ -339,7 +338,6 @@ class ParanoiaTest < Test::Unit::TestCase
 
     b = ParanoidModel.new
     b.save
-    b_id = b.id
     b.destroy
 
     c = ParanoidModel.new
@@ -374,13 +372,13 @@ class ParanoiaTest < Test::Unit::TestCase
     assert_equal true, second_child.destroyed?
 
     parent.destroy
-    parent.restore(:recursive => true)
+    parent.restore(recursive: true)
     assert_equal true, parent.deleted_at.nil?
     assert_equal true, first_child.reload.deleted_at.nil?
     assert_equal true, second_child.destroyed?
 
     parent.destroy
-    ParentModel.restore(parent.id, :recursive => true)
+    ParentModel.restore(parent.id, recursive: true)
     assert_equal true, parent.reload.deleted_at.nil?
     assert_equal true, first_child.reload.deleted_at.nil?
     assert_equal true, second_child.destroyed?
@@ -389,34 +387,34 @@ class ParanoiaTest < Test::Unit::TestCase
   # regression tests for #118
   def test_restore_with_has_one_association
     # setup and destroy test objects
-    hasOne = ParanoidModelWithHasOne.create
-    belongsTo = ParanoidModelWithBelong.create
-    hasOne.paranoid_model_with_belong = belongsTo
-    hasOne.save!
+    has_one = ParanoidModelWithHasOne.create
+    belongs_to = ParanoidModelWithBelong.create
+    has_one.paranoid_model_with_belong = belongs_to
+    has_one.save!
 
-    hasOne.destroy
-    assert_equal false, hasOne.deleted_at.nil?
-    assert_equal false, belongsTo.deleted_at.nil?
+    has_one.destroy
+    assert_equal false, has_one.deleted_at.nil?
+    assert_equal false, belongs_to.deleted_at.nil?
 
     # Does it restore has_one associations?
-    hasOne.restore(:recursive => true)
-    hasOne.save!
+    has_one.restore(recursive: true)
+    has_one.save!
 
-    assert_equal true, hasOne.reload.deleted_at.nil?
-    assert_equal true, belongsTo.reload.deleted_at.nil?, "#{belongsTo.deleted_at}"
-    assert ParanoidModelWithBelong.with_deleted.reload.count != 0, "There should be a record"
+    assert_equal true, has_one.reload.deleted_at.nil?
+    assert_equal true, belongs_to.reload.deleted_at.nil?, "#{belongs_to.deleted_at}"
+    assert ParanoidModelWithBelong.with_deleted.reload.count != 0, 'There should be a record'
   end
 
   def test_restore_with_nil_has_one_association
     # setup and destroy test object
-    hasOne = ParanoidModelWithHasOne.create
-    hasOne.destroy
-    assert_equal false, hasOne.reload.deleted_at.nil?
+    has_one = ParanoidModelWithHasOne.create
+    has_one.destroy
+    assert_equal false, has_one.reload.deleted_at.nil?
 
     # Does it raise NoMethodException on restore of nil
-    hasOne.restore(:recursive => true)
+    has_one.restore(recursive: true)
 
-    assert hasOne.reload.deleted_at.nil?
+    assert has_one.reload.deleted_at.nil?
   end
 
   def test_observers_notified
@@ -424,8 +422,8 @@ class ParanoiaTest < Test::Unit::TestCase
     a.destroy
     a.restore!
 
-    assert a.observers_notified.select {|args| args == [:before_restore, a]}
-    assert a.observers_notified.select {|args| args == [:after_restore, a]}
+    assert a.observers_notified.select { |args| args == [:before_restore, a] }
+    assert a.observers_notified.select { |args| args == [:after_restore, a] }
   end
 
   def test_observers_not_notified_if_not_supported
@@ -436,15 +434,16 @@ class ParanoiaTest < Test::Unit::TestCase
   end
 
   def test_validates_uniqueness_checks_all_records
-    a = Employer.create!(name: "A")
+    a = Employer.create!(name: 'A')
     a.destroy
-    b = Employer.new(name: "A")
+    b = Employer.new(name: 'A')
     refute b.valid?
   end
 
   private
-  def get_featureful_model
-    FeaturefulModel.new(:name => 'not empty')
+
+  def featureful_model
+    FeaturefulModel.new(name: 'not empty')
   end
 end
 
@@ -468,7 +467,7 @@ end
 
 class FeaturefulModel < ActiveRecord::Base
   acts_as_paranoid
-  validates :name, :presence => true, :uniqueness => true
+  validates :name, presence: true, uniqueness: true
 end
 
 class PlainModel < ActiveRecord::Base
@@ -476,25 +475,25 @@ end
 
 class CallbackModel < ActiveRecord::Base
   acts_as_paranoid
-  before_destroy {|model| model.instance_variable_set :@destroy_callback_called, true }
-  before_restore {|model| model.instance_variable_set :@restore_callback_called, true }
-  before_update  {|model| model.instance_variable_set :@update_callback_called, true }
-  before_save    {|model| model.instance_variable_set :@save_callback_called, true}
+  before_destroy { |model| model.instance_variable_set :@destroy_callback_called, true }
+  before_restore { |model| model.instance_variable_set :@restore_callback_called, true }
+  before_update  { |model| model.instance_variable_set :@update_callback_called, true }
+  before_save    { |model| model.instance_variable_set :@save_callback_called, true }
 
-  after_destroy  {|model| model.instance_variable_set :@after_destroy_callback_called, true }
-  after_commit   {|model| model.instance_variable_set :@after_commit_callback_called, true }
+  after_destroy  { |model| model.instance_variable_set :@after_destroy_callback_called, true }
+  after_commit   { |model| model.instance_variable_set :@after_commit_callback_called, true }
 
-  validate       {|model| model.instance_variable_set :@validate_called, true }
+  validate       { |model| model.instance_variable_set :@validate_called, true }
 
   def remove_called_variables
-    instance_variables.each {|name| (name.to_s.end_with?('_called')) ? remove_instance_variable(name) : nil}
+    instance_variables.each { |name| (name.to_s.end_with?('_called')) ? remove_instance_variable(name) : nil }
   end
 end
 
 class ParentModel < ActiveRecord::Base
   acts_as_paranoid
   has_many :related_models
-  has_many :very_related_models, :class_name => 'RelatedModel', dependent: :destroy
+  has_many :very_related_models, class_name: 'RelatedModel', dependent: :destroy
   has_many :non_paranoid_models, dependent: :destroy
 end
 
@@ -507,13 +506,13 @@ class Employer < ActiveRecord::Base
   acts_as_paranoid
   validates_uniqueness_of :name
   has_many :jobs
-  has_many :employees, :through => :jobs
+  has_many :employees, through: :jobs
 end
 
 class Employee < ActiveRecord::Base
   acts_as_paranoid
   has_many :jobs
-  has_many :employers, :through => :jobs
+  has_many :employers, through: :jobs
 end
 
 class Job < ActiveRecord::Base
@@ -545,7 +544,7 @@ end
 
 # refer back to regression test for #118
 class ParanoidModelWithHasOne < ParanoidModel
-  has_one :paranoid_model_with_belong, :dependent => :destroy
+  has_one :paranoid_model_with_belong, dependent: :destroy
 end
 
 class ParanoidModelWithBelong < ActiveRecord::Base

@@ -1,0 +1,74 @@
+AllCops:
+  Include:
+    - '**/*.rake'
+    - '**/Gemfile'
+    - '**/Rakefile'
+    - '**/*.rb'
+    - '**/*.gemspec'
+
+Style/RedundantReturn:
+  AllowMultipleReturnValues: true
+
+LineLength:
+  Enabled: false
+
+BlockNesting:
+  Enabled: false
+
+AssignmentInCondition:
+  Enabled: false
+
+CollectionMethods:
+  Enabled: false
+
+CyclomaticComplexity:
+  Enabled: false
+
+AbcSize:
+  Enabled: false
+
+MethodLength:
+  Enabled: false
+
+ModuleLength:
+  Enabled: false
+
+PerlBackrefs:
+  Enabled: false
+
+RescueModifier:
+  Enabled: false
+
+HandleExceptions:
+  Enabled: false
+
+ClassLength:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+RegexpLiteral:
+  Enabled: false
+
+SignalException:
+  EnforcedStyle: only_raise
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/TrivialAccessors:
+  Enabled: true
+  ExactNameMatch: true
+
+Style/LineEndConcatenation:
+  Enabled: false
+
+Style/PredicateName:
+  Enabled: false
+
+Style/Alias:
+  Enabled: false

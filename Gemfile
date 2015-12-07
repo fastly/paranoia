@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
-gem 'sqlite3', :platforms => [:ruby]
-gem 'activerecord-jdbcsqlite3-adapter', :platforms => [:jruby]
+gem 'sqlite3', platforms: [:ruby]
+gem 'activerecord-jdbcsqlite3-adapter', platforms: [:jruby]
 
 platforms :rbx do
   gem 'rubysl', '~> 2.0'
