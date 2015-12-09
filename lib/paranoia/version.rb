@@ -1,3 +1,3 @@
 module Paranoia
-  VERSION = 'fastly-1.3.5'
+  VERSION = 'fastly-1.3.6'
 end
