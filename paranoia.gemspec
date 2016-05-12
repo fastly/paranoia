@@ -2,7 +2,7 @@
 require File.expand_path('../lib/paranoia/version', __FILE__)
 
 Gem::Specification.new do |s|
-  s.name = 'paranoia'
+  s.name = 'fst-paranoia'
   s.version = Paranoia::VERSION
   s.platform = Gem::Platform::RUBY
   s.authors = %w(radarlistener@gmail.com)
